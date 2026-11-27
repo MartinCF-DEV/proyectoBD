@@ -23,7 +23,15 @@ const USER_KEY = 'c360_admin_user';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly apiBase = 'http://localhost:5000/api';
+  private readonly apiBase = this.resolveApiBase();
+
+  private resolveApiBase(): string {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:5000/api';
+    }
+    return '/api';
+  }
 
   private readonly tokenSignal = signal<string | null>(this.getStoredToken());
   private readonly userSignal = signal<AdminUser | null>(this.getStoredUser());

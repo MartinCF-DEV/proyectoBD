@@ -1467,7 +1467,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (this.ws) {
         this.ws.close();
       }
-      this.ws = new WebSocket('ws://localhost:5000/ws');
+      const host = window.location.hostname;
+      const wsUrl = (host === 'localhost' || host === '127.0.0.1')
+        ? 'ws://localhost:5000/ws'
+        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+      this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
         this.wsConectado.set(true);
       };

@@ -10,12 +10,19 @@ var loadedEnvPath = DotEnvLoader.LoadFromHierarchy(Directory.GetCurrentDirectory
 
 var builder = WebApplication.CreateBuilder(args);
 
+var portEnv = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(portEnv))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{portEnv}");
+}
+
 if (loadedEnvPath is not null)
 {
     Console.WriteLine($"[INFO] Variables de entorno cargadas desde: {loadedEnvPath}");
 }
 
-var jwtSecret = DotEnvLoader.GetRequired("JWT_SECRET");
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
+    ?? "C360_ClaveSecreta_SuperSegura_JWT_2026_UTM_BasesDatosNube!";
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "Community360.Api";
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "Community360.Web";
 
@@ -30,10 +37,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            ?? ["http://localhost:4200", "http://127.0.0.1:4200"];
-
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -100,6 +104,8 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 app.UseCors("FrontendPolicy");
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseWebSockets();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -125,5 +131,7 @@ app.MapGet("/api/health", () => Results.Ok(new
     servicio = "Community 360 API (.NET 10)",
     timestamp_utc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
 }));
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -16,7 +16,8 @@ public sealed class JwtTokenService
 
     public JwtTokenService()
     {
-        _secret = DotEnvLoader.GetRequired("JWT_SECRET");
+        _secret = Environment.GetEnvironmentVariable("JWT_SECRET")
+            ?? "C360_ClaveSecreta_SuperSegura_JWT_2026_UTM_BasesDatosNube!";
         _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "Community360.Api";
         _audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "Community360.Web";
         _expMinutes = int.TryParse(Environment.GetEnvironmentVariable("JWT_EXP_MINUTES"), out var m) && m > 0
