@@ -29,6 +29,10 @@ interface SegmentoDona {
   imports: [CommonModule, FormsModule],
   template: `
     <div id="app" [class.sidebar-collapsed]="!menuAbierto()">
+      @if (menuAbierto()) {
+        <div class="side-backdrop" (click)="menuAbierto.set(false)"></div>
+      }
+
       <!-- Menú lateral izquierdo desplegable (sin iconos) -->
       <aside [class.closed]="!menuAbierto()">
         <div class="brand">
@@ -762,8 +766,11 @@ interface SegmentoDona {
       margin-top: 10px;
       width: 100%;
     }
+    .side-backdrop {
+      display: none;
+    }
     .open-bar {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .open-side-btn {
       display: inline-flex;
@@ -787,6 +794,7 @@ interface SegmentoDona {
       min-width: 0;
       max-width: 1440px;
       width: 100%;
+      box-sizing: border-box;
     }
     .head {
       display: flex;
@@ -879,11 +887,11 @@ interface SegmentoDona {
     }
     .mini {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
       gap: 10px;
     }
     .mini.five-cols {
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
     }
     .mini div {
       background: var(--bg);
@@ -969,7 +977,7 @@ interface SegmentoDona {
       margin-top: 4px;
     }
     .vivo-box {
-      height: 256px;
+      min-height: 256px;
     }
     .dw-sym {
       display: flex;
@@ -977,6 +985,7 @@ interface SegmentoDona {
       justify-content: center;
       gap: 16px;
       flex: 1;
+      flex-wrap: wrap;
     }
     .donut-svg {
       width: 120px;
@@ -1029,9 +1038,11 @@ interface SegmentoDona {
       display: flex;
       align-items: center;
       flex: 1;
+      overflow-x: auto;
     }
     .hm-tc {
       width: 100%;
+      min-width: 280px;
       display: grid;
       grid-template-columns: 98px repeat(6, 1fr);
       gap: 4px;
@@ -1063,7 +1074,7 @@ interface SegmentoDona {
       transition: background 0.35s ease, color 0.35s ease;
     }
     .vivo-bot-box {
-      height: 290px;
+      min-height: 290px;
     }
     #log {
       list-style: none;
@@ -1292,28 +1303,91 @@ interface SegmentoDona {
       gap: 10px;
     }
 
-    @media (max-width: 1024px) {
-      #app { grid-template-columns: 1fr; }
+    @media (max-width: 1200px) {
+      .c3 { grid-column: span 6; }
+      .c4 { grid-column: span 6; }
+      .c4:last-child { grid-column: span 12; }
+      .filters {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 960px) {
+      #app,
+      #app.sidebar-collapsed {
+        grid-template-columns: 1fr;
+      }
+      .side-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 42, 29, 0.32);
+        backdrop-filter: blur(2px);
+        z-index: 90;
+      }
       aside {
-        position: static;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100vh;
+        width: 260px;
+        max-width: 82vw;
+        z-index: 100;
+        box-shadow: 0 12px 32px rgba(15, 42, 29, 0.18);
+        overflow-y: auto;
+      }
+      main {
+        padding: 18px 20px;
+      }
+      .c5, .c6, .c7 {
+        grid-column: span 12;
+      }
+      .rq-stack {
+        grid-template-columns: 1fr;
+      }
+      .vivo-box, .vivo-bot-box {
+        min-height: auto;
         height: auto;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
       }
-      nav {
-        flex-direction: row;
-        overflow-x: auto;
+      .filters {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 14px;
+      }
+      .head h2 {
+        font-size: 20px;
+      }
+      .pill {
+        margin-left: 0;
         width: 100%;
+        justify-content: center;
       }
-      .user { display: none; }
-      .grid > * { grid-column: 1 / -1 !important; }
-      .mini, .mini.five-cols { grid-template-columns: repeat(2, 1fr); }
-      .crud-grid { grid-template-columns: 1fr 1fr; }
-      .crud-text, .crud-btn { grid-column: 1 / -1; }
-      .rq-stack { grid-template-columns: 1fr; }
-      .vivo-box, .vivo-bot-box { height: auto; }
+      .c3, .c4, .c5, .c6, .c7, .c12 {
+        grid-column: 1 / -1 !important;
+      }
+      .filters {
+        grid-template-columns: 1fr;
+      }
+      .bar {
+        grid-template-columns: 110px 1fr 34px;
+        font-size: 12px;
+      }
+      .ba {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .ba .ar {
+        transform: rotate(90deg);
+      }
+      .dw-priv {
+        gap: 16px;
+        justify-content: center;
+      }
     }
   `]
 })
@@ -1450,6 +1524,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 960) {
+      this.menuAbierto.set(false);
+    }
     this.authService.verifySession().subscribe();
     this.cargarDatos();
     this.conectarWebSocket();
@@ -1516,6 +1593,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   cambiarSeccion(sec: SeccionActiva): void {
     this.seccion.set(sec);
+    if (typeof window !== 'undefined' && window.innerWidth <= 960) {
+      this.menuAbierto.set(false);
+    }
   }
 
   sinGuion(texto: string | null | undefined): string {

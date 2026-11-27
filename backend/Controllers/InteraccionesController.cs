@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Community360.Api.Models;
 using Community360.Api.Services;
@@ -11,6 +12,12 @@ namespace Community360.Api.Controllers;
 [Authorize(Roles = "admin")]
 public sealed class InteraccionesController : ControllerBase
 {
+    private static readonly JsonSerializerOptions JsonPrettyOptions = new()
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly CloudDatabaseService _dbService;
     private readonly WebSocketHubService _wsHub;
 
@@ -91,8 +98,8 @@ public sealed class InteraccionesController : ControllerBase
             codigo = 201,
             resumen = $"{creada.IdInteraccion} · {creada.Tema} · {creada.Tipo}",
             hora = DateTime.Now.ToString("HH:mm:ss"),
-            peticion = $"POST /api/interacciones\nAuthorization: Bearer ••••••\n\n{JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}",
-            respuesta = $"201 Created\n{JsonSerializer.Serialize(creada, new JsonSerializerOptions { WriteIndented = true })}",
+            peticion = $"POST /api/interacciones\nAuthorization: Bearer ••••••\n\n{JsonSerializer.Serialize(request, JsonPrettyOptions)}",
+            respuesta = $"201 Created\n{JsonSerializer.Serialize(creada, JsonPrettyOptions)}",
             efecto = $"Cambio en el dashboard → N: {nAntes} → {resumenDespues.TotalInteraccionesValidas} · conteo({creada.Tema}) +1 · {creada.Tipo} +1",
             dashboard = resumenDespues
         });
@@ -139,8 +146,8 @@ public sealed class InteraccionesController : ControllerBase
             codigo = 200,
             resumen = $"{actualizada.IdInteraccion} · {previa?.Tema ?? actualizada.Tema} → {actualizada.Tema}",
             hora = DateTime.Now.ToString("HH:mm:ss"),
-            peticion = $"PUT /api/interacciones/{actualizada.IdInteraccion}\nAuthorization: Bearer ••••••\n\n{JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}",
-            respuesta = $"200 OK\n{JsonSerializer.Serialize(actualizada, new JsonSerializerOptions { WriteIndented = true })}",
+            peticion = $"PUT /api/interacciones/{actualizada.IdInteraccion}\nAuthorization: Bearer ••••••\n\n{JsonSerializer.Serialize(request, JsonPrettyOptions)}",
+            respuesta = $"200 OK\n{JsonSerializer.Serialize(actualizada, JsonPrettyOptions)}",
             efecto = $"Cambio en el dashboard → N sin cambio ({resumenDespues.TotalInteraccionesValidas}) · {actualizada.IdInteraccion} actualizado ({actualizada.Tema}, {actualizada.Canal})",
             dashboard = resumenDespues
         });
@@ -176,7 +183,7 @@ public sealed class InteraccionesController : ControllerBase
             resumen = $"{normId} · {previa?.Tema ?? "eliminada"}",
             hora = DateTime.Now.ToString("HH:mm:ss"),
             peticion = $"DELETE /api/interacciones/{normId}\nAuthorization: Bearer ••••••",
-            respuesta = $"200 OK\n{JsonSerializer.Serialize(respObj, new JsonSerializerOptions { WriteIndented = true })}",
+            respuesta = $"200 OK\n{JsonSerializer.Serialize(respObj, JsonPrettyOptions)}",
             efecto = $"Cambio en el dashboard → N: {nAntes} → {resumenDespues.TotalInteraccionesValidas} · conteo({previa?.Tema ?? "tema"}) −1",
             dashboard = resumenDespues
         });
