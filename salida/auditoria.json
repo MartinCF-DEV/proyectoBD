@@ -1,0 +1,119 @@
+{
+  "entrada": {
+    "usuarios": 1068,
+    "interacciones": 1000
+  },
+  "etapa1_duplicados_eliminados": {
+    "usuarios_fila_completa": 0,
+    "usuarios_id_repetido": 0,
+    "usuarios_alias_repetido": 0,
+    "interacciones_fila_completa": 0,
+    "interacciones_id_repetido": 0
+  },
+  "etapa2_nulos_normalizados": {
+    "usuarios": {
+      "latitud": 275,
+      "longitud": 275
+    },
+    "interacciones": {
+      "texto": 144,
+      "pais": 173,
+      "estado": 173,
+      "ciudad": 173,
+      "etiquetas": 231
+    },
+    "interacciones_longitud_texto_normalizada_a_nulo": 144
+  },
+  "etapa3_estandarizacion": {
+    "valores_unificados": {},
+    "fechas_convertidas": {
+      "usuarios.fecha_ingreso": 1068,
+      "usuarios.ultima_actividad": 1068,
+      "interacciones.timestamp": 1000
+    },
+    "interacciones_con_etiquetas": 769
+  },
+  "etapa4_validacion_tipos": {
+    "usuarios": {
+      "validos": 1068,
+      "rechazados": 0
+    },
+    "interacciones": {
+      "validos": 1000,
+      "rechazados": 0
+    },
+    "atipicos_reportados": {
+      "mensajes_30d": {
+        "p99": 65.98999999999978,
+        "casos_extremos": [
+          [
+            "U000002",
+            "817"
+          ],
+          [
+            "U000169",
+            "277"
+          ],
+          [
+            "U000483",
+            "311"
+          ]
+        ]
+      },
+      "reacciones_30d": {
+        "p99": 202.32999999999993,
+        "casos_extremos": [
+          [
+            "U000002",
+            "2026"
+          ],
+          [
+            "U000169",
+            "726"
+          ]
+        ]
+      }
+    }
+  },
+  "etapa5_referencias": {
+    "interacciones_huerfanas": 793,
+    "usuarios_distintos_huerfanos": 614,
+    "interacciones_validas": 207,
+    "usuarios_sin_interacciones": 932
+  },
+  "etapa6_privacidad": {
+    "usuarios_sin_consentimiento": 171,
+    "usuarios_con_geo_depurados": 171,
+    "valores_geograficos_borrados_usuarios": 684,
+    "interacciones_de_usuarios_sin_consentimiento": 26,
+    "valores_geograficos_borrados_interacciones": 0,
+    "interacciones_huerfanas_con_geo_depuradas": 646,
+    "valores_geograficos_borrados_huerfanas": 1938,
+    "columnas_usuarios": [
+      "pais",
+      "estado",
+      "ciudad",
+      "latitud",
+      "longitud",
+      "zona_horaria"
+    ],
+    "columnas_interacciones": [
+      "pais",
+      "estado",
+      "ciudad"
+    ]
+  },
+  "salida": {
+    "usuarios": 1068,
+    "interacciones": 207
+  },
+  "etapa7_exportacion": {
+    "usuarios_depurados.csv": 1068,
+    "interacciones_depuradas.csv": 207,
+    "interaccion_etiquetas.csv": 318,
+    "rechazados/usuarios_invalidos.csv": 0,
+    "rechazados/interacciones_invalidas.csv": 0,
+    "rechazados/interacciones_huerfanas.csv": 793
+  },
+  "generado_utc": "2026-11-21T20:30:45Z"
+}
