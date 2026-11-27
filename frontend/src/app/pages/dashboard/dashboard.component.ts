@@ -114,65 +114,26 @@ interface SegmentoDona {
 
             @if (resumen(); as r) {
               <div class="grid">
-                <div class="card c6">
-                  <div class="db">
-                    <b>Couchbase Capella</b>
-                    <span class="tag">community360.comunidad</span>
-                  </div>
-                  <div class="mini">
-                    <div>
-                      <span>usuarios</span>
-                      <b>{{ r.total_usuarios | number }}</b>
-                    </div>
-                    <div>
-                      <span>cuarentena</span>
-                      <b>{{ r.total_cuarentena | number }}</b>
-                    </div>
-                    <div>
-                      <span>bitácora carga</span>
-                      <b>{{ r.total_bitacora_carga }}</b>
-                    </div>
-                    <div>
-                      <span>cuentas</span>
-                      <b>{{ r.total_cuentas_admin }}</b>
-                    </div>
-                  </div>
+                <div class="card c4 kpi">
+                  <h3>Usuarios</h3>
+                  <b>{{ r.total_usuarios | number }}</b>
                 </div>
 
-                <div class="card c6">
-                  <div class="db">
-                    <b>DataStax Astra DB (Cassandra)</b>
-                    <span class="tag">community360</span>
-                  </div>
-                  <div class="mini five-cols">
-                    <div>
-                      <span>por id</span>
-                      <b>{{ r.total_interacciones_validas }}</b>
-                    </div>
-                    <div>
-                      <span>por usuario</span>
-                      <b>{{ r.total_interacciones_usuario }}</b>
-                    </div>
-                    <div>
-                      <span>por tema</span>
-                      <b>{{ r.total_interacciones_tema }}</b>
-                    </div>
-                    <div>
-                      <span>por estado</span>
-                      <b>{{ r.total_interacciones_estado }}</b>
-                    </div>
-                    <div>
-                      <span>por etiqueta</span>
-                      <b>{{ r.total_interacciones_etiqueta }}</b>
-                    </div>
-                  </div>
+                <div class="card c4 kpi">
+                  <h3>Interacciones válidas</h3>
+                  <b>{{ r.total_interacciones_validas | number }}</b>
+                </div>
+
+                <div class="card c4 kpi">
+                  <h3>Pendientes de revisión</h3>
+                  <b>{{ r.total_cuarentena | number }}</b>
                 </div>
 
                 <div class="card c4">
                   <h3>Usuarios por estatus</h3>
                   @for (item of r.usuarios_por_estatus; track item.categoria) {
                     <div class="bar">
-                      <span [title]="sinGuion(item.categoria)">{{ sinGuion(item.categoria) }}</span>
+                      <span [title]="etiquetaCategoria(item.categoria)">{{ etiquetaCategoria(item.categoria) }}</span>
                       <span class="t">
                         <i [style.width.%]="pct(item.total, maxConteo(r.usuarios_por_estatus))"></i>
                       </span>
@@ -185,7 +146,7 @@ interface SegmentoDona {
                   <h3>Interacciones por tema</h3>
                   @for (item of r.interacciones_por_tema; track item.categoria) {
                     <div class="bar">
-                      <span [title]="sinGuion(item.categoria)">{{ sinGuion(item.categoria) }}</span>
+                      <span [title]="etiquetaCategoria(item.categoria)">{{ etiquetaCategoria(item.categoria) }}</span>
                       <span class="t">
                         <i [style.width.%]="pct(item.total, maxConteo(r.interacciones_por_tema))"></i>
                       </span>
@@ -198,7 +159,7 @@ interface SegmentoDona {
                   <h3>Interacciones por etiqueta</h3>
                   @for (item of r.interacciones_por_etiqueta_top; track item.categoria) {
                     <div class="bar">
-                      <span [title]="sinGuion(item.categoria)">{{ sinGuion(item.categoria) }}</span>
+                      <span [title]="etiquetaCategoria(item.categoria)">{{ etiquetaCategoria(item.categoria) }}</span>
                       <span class="t">
                         <i [style.width.%]="pct(item.total, maxConteo(r.interacciones_por_etiqueta_top))"></i>
                       </span>
@@ -242,7 +203,7 @@ interface SegmentoDona {
 
                 <div class="card kpi c3 kpi-leader" [class.flash]="flashKpi()">
                   <h3>Tema líder</h3>
-                  <b [title]="sinGuion(r.tema_lider)">{{ sinGuion(r.tema_lider) }}</b>
+                  <b [title]="etiquetaCategoria(r.tema_lider)">{{ etiquetaCategoria(r.tema_lider) }}</b>
                 </div>
 
                 <div class="card kpi c3" [class.flash]="flashKpi()">
@@ -275,7 +236,7 @@ interface SegmentoDona {
                       @for (seg of segmentosDona(); track seg.tipo) {
                         <div class="leg-row">
                           <i [style.background]="seg.color"></i>
-                          <span class="leg-name">{{ sinGuion(seg.tipo) }}</span>
+                          <span class="leg-name">{{ etiquetaTipo(seg.tipo) }}</span>
                           <b>{{ seg.conteo }}</b>
                           <small>({{ seg.porcentaje }}%)</small>
                         </div>
@@ -289,7 +250,7 @@ interface SegmentoDona {
                   <div class="bars-compact">
                     @for (t of r.interacciones_por_tema; track t.categoria) {
                       <div class="bar bar-sm">
-                        <span [title]="sinGuion(t.categoria)">{{ sinGuion(t.categoria) }}</span>
+                        <span [title]="etiquetaCategoria(t.categoria)">{{ etiquetaCategoria(t.categoria) }}</span>
                         <span class="t">
                           <i [style.width.%]="pct(t.total, maxConteo(r.interacciones_por_tema))"></i>
                         </span>
@@ -304,15 +265,15 @@ interface SegmentoDona {
                   <div class="hm-wrap">
                     <div class="hm-tc">
                       <div></div>
-                      @for (abrev of canalesAbrev; track abrev) {
-                        <div class="hm-head">{{ abrev }}</div>
+                      @for (abrev of canalesAbrev; track abrev; let idx = $index) {
+                        <div class="hm-head" [title]="canales[idx] || abrev">{{ abrev }}</div>
                       }
                       @for (fila of r.mapa_calor_tema_canal; track fila.tema) {
-                        <div class="hm-tema" [title]="sinGuion(fila.tema)">{{ sinGuion(fila.tema) }}</div>
+                        <div class="hm-tema" [title]="etiquetaCategoria(fila.tema)">{{ etiquetaCategoria(fila.tema) }}</div>
                         @for (val of fila.celdas; track $index; let cIdx = $index) {
                           <div
                             class="c-tc"
-                            [title]="sinGuion(fila.tema) + ' · ' + (r.canales_calor[cIdx] || '') + ': ' + val"
+                            [title]="etiquetaCategoria(fila.tema) + ' · ' + (r.canales_calor[cIdx] || '') + ': ' + val"
                             [style.background]="colorCeldaCalor(val, maxHeatmapTemaCanal())"
                             [style.color]="val / maxHeatmapTemaCanal() > 0.55 ? '#fff' : '#16322a'"
                           >
@@ -321,6 +282,14 @@ interface SegmentoDona {
                         }
                       }
                     </div>
+                  </div>
+                  <div class="hm-leyenda">
+                    <span><b>TG</b> Telegram</span>
+                    <span><b>DC</b> Discord</span>
+                    <span><b>IG</b> Instagram</span>
+                    <span><b>TK</b> TikTok</span>
+                    <span><b>FB</b> Facebook</span>
+                    <span><b>TW</b> Twitter/X</span>
                   </div>
                 </div>
               </div>
@@ -348,7 +317,7 @@ interface SegmentoDona {
                   <select [(ngModel)]="filtroTema">
                     <option value="">Todos los temas</option>
                     @for (tm of temas; track tm) {
-                      <option [value]="tm">{{ sinGuion(tm) }}</option>
+                      <option [value]="tm">{{ etiquetaCategoria(tm) }}</option>
                     }
                   </select>
                   <select [(ngModel)]="filtroCanal">
@@ -360,11 +329,15 @@ interface SegmentoDona {
                   <select [(ngModel)]="filtroEtiqueta">
                     <option value="">Todas las etiquetas</option>
                     @for (et of etiquetasCatalogo; track et) {
-                      <option [value]="et">{{ sinGuion(et) }}</option>
+                      <option [value]="et">{{ etiquetaCategoria(et) }}</option>
                     }
                   </select>
                   <button type="button" class="p" (click)="buscarInteracciones()">Consultar</button>
                   <button type="button" (click)="limpiarFiltros()">Limpiar</button>
+                </div>
+
+                <div class="sent-nota">
+                  <b>Escala de sentimiento:</b> de <code>-1</code> (negativo) a <code>1</code> (positivo), donde <code>0</code> es neutro.
                 </div>
 
                 <div class="tw">
@@ -379,7 +352,7 @@ interface SegmentoDona {
                         <th>Tema</th>
                         <th>Texto</th>
                         <th>Estado</th>
-                        <th>Sent.</th>
+                        <th title="Escala de -1 (negativo) a 1 (positivo)">Sentimiento (-1 a 1)</th>
                         <th>Etiquetas</th>
                       </tr>
                     </thead>
@@ -388,16 +361,16 @@ interface SegmentoDona {
                         <tr>
                           <td><b>{{ i.id_interaccion }}</b></td>
                           <td>{{ i.id_usuario }}</td>
-                          <td>{{ i.fecha_hora }}</td>
+                          <td>{{ formatearFecha(i.fecha_hora) }}</td>
                           <td>{{ i.canal }}</td>
-                          <td>{{ sinGuion(i.tipo) }}</td>
-                          <td>{{ sinGuion(i.tema) }}</td>
+                          <td>{{ etiquetaTipo(i.tipo) }}</td>
+                          <td>{{ etiquetaCategoria(i.tema) }}</td>
                           <td class="td-clip" [title]="i.texto || ''">{{ i.texto || '—' }}</td>
                           <td>{{ i.estado || '—' }}</td>
                           <td>{{ i.sentimiento | number:'1.2-2' }}</td>
                           <td>
                             @for (et of i.etiquetas; track et) {
-                              <span class="chip">{{ sinGuion(et) }}</span>
+                              <span class="chip">{{ etiquetaCategoria(et) }}</span>
                             }
                           </td>
                         </tr>
@@ -434,7 +407,7 @@ interface SegmentoDona {
                     <polyline [attr.points]="svg.linePoints" fill="none" stroke="#2e9e6b" stroke-width="2.5" stroke-linejoin="round" />
                     @for (pt of svg.circles; track pt.fecha) {
                       <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3" fill="#fff" stroke="#2e9e6b" stroke-width="2">
-                        <title>{{ pt.fecha }}: {{ pt.total }} interacciones</title>
+                        <title>{{ formatearFechaCorta(pt.fecha) }}: {{ pt.total }} interacciones</title>
                       </circle>
                     }
                   }
@@ -483,27 +456,57 @@ interface SegmentoDona {
 
                 <div class="card c6">
                   <h3>Registro sin consentimiento ({{ r.ejemplo_usuario_anonimizado?.id_usuario }})</h3>
-                  <pre>{{ ejemploAnonimizadoJson() }}</pre>
+                  @if (r.ejemplo_usuario_anonimizado; as uAnon) {
+                    <div class="perfil-legible">
+                      <div class="perfil-item">
+                        <span>Alias</span>
+                        <b>{{ uAnon.alias }}</b>
+                      </div>
+                      <div class="perfil-item">
+                        <span>Fecha de ingreso</span>
+                        <b>{{ formatearFechaCorta(uAnon.fecha_ingreso) }}</b>
+                      </div>
+                      <div class="perfil-item">
+                        <span>Edad</span>
+                        <b>{{ uAnon.rango_edad }} años</b>
+                      </div>
+                      <div class="perfil-item">
+                        <span>Mensajes en los últimos 30 días</span>
+                        <b>{{ uAnon.mensajes_30d | number }}</b>
+                      </div>
+                      <div class="perfil-item">
+                        <span>¿Es artista?</span>
+                        <b>{{ uAnon.es_artista ? 'Sí' : 'No' }}</b>
+                      </div>
+                      <div class="perfil-item">
+                        <span>Consentimiento</span>
+                        <b class="badge-no">{{ uAnon.consentimiento_datos === 'si' ? 'Sí' : 'No' }}</b>
+                      </div>
+                    </div>
+                    <div class="perfil-priv-nota">
+                      Ubicación (país, estado, ciudad y coordenadas) omitida por falta de consentimiento.
+                    </div>
+                  }
                 </div>
 
                 <div class="card c6">
-                  <h3>Bitácora de carga</h3>
+                  <h3>Registro de cargas</h3>
                   <div class="tw">
                     <table>
                       <thead>
                         <tr>
-                          <th>Ejecución</th>
-                          <th>Archivo</th>
+                          <th>Proceso</th>
+                          <th>Origen de datos</th>
                           <th>Leídos</th>
                           <th>Válidos</th>
-                          <th>Rech.</th>
+                          <th>Descartados</th>
                         </tr>
                       </thead>
                       <tbody>
                         @for (b of r.bitacora_carga; track b.id_ejecucion) {
                           <tr>
-                            <td><b>{{ b.id_ejecucion }}</b></td>
-                            <td>{{ sinGuion(b.archivo) }}</td>
+                            <td><b>{{ nombreProcesoCarga(b.id_ejecucion) }}</b></td>
+                            <td>{{ nombreArchivoCarga(b.archivo) }}</td>
                             <td>{{ b.recibidos | number }}</td>
                             <td>{{ b.aceptados | number }}</td>
                             <td>{{ b.rechazados | number }}</td>
@@ -515,24 +518,27 @@ interface SegmentoDona {
                 </div>
 
                 <div class="card c6">
-                  <h3>Cuarentena</h3>
+                  <div class="db" style="margin-bottom:8px">
+                    <h3 style="margin:0">Pendientes de revisión</h3>
+                    <span class="tag">{{ r.muestra_cuarentena.length }} interacciones sin usuario registrado</span>
+                  </div>
                   <div class="tw">
                     <table>
                       <thead>
                         <tr>
-                          <th>ID interacción</th>
-                          <th>ID usuario</th>
+                          <th>Interacción</th>
+                          <th>Usuario</th>
                           <th>Canal</th>
                           <th>Motivo</th>
                         </tr>
                       </thead>
                       <tbody>
-                        @for (c of r.muestra_cuarentena.slice(0, 5); track c.id_interaccion) {
+                        @for (c of r.muestra_cuarentena.slice(0, 8); track c.id_interaccion) {
                           <tr>
                             <td><b>{{ c.id_interaccion }}</b></td>
                             <td>{{ c.id_usuario }}</td>
                             <td>{{ c.canal }}</td>
-                            <td><span class="chip">{{ sinGuion(c.motivo_rechazo) }}</span></td>
+                            <td><span class="chip">{{ textoMotivoRechazo(c.motivo_rechazo) }}</span></td>
                           </tr>
                         }
                       </tbody>
@@ -541,14 +547,14 @@ interface SegmentoDona {
                 </div>
 
                 <div class="card c6">
-                  <h3>Valores atípicos de actividad</h3>
+                  <h3>Casos fuera de lo común</h3>
                   <div class="tw">
                     <table>
                       <thead>
                         <tr>
                           <th>Usuario</th>
-                          <th>Mensajes (30d)</th>
-                          <th>Reacciones (30d)</th>
+                          <th>Mensajes (últimos 30 días)</th>
+                          <th>Reacciones (últimos 30 días)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1073,6 +1079,70 @@ interface SegmentoDona {
       font-variant-numeric: tabular-nums;
       transition: background 0.35s ease, color 0.35s ease;
     }
+    .hm-leyenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px dashed var(--bd);
+      font-size: 10.5px;
+      color: var(--mut);
+    }
+    .hm-leyenda b {
+      color: var(--gd);
+      font-weight: 700;
+    }
+    .sent-nota {
+      font-size: 12px;
+      color: var(--mut);
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 7px 12px;
+      margin-bottom: 12px;
+    }
+    .sent-nota code {
+      background: var(--gl);
+      color: var(--gd);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .perfil-legible {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .perfil-item {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .perfil-item span {
+      font-size: 11px;
+      color: var(--mut);
+    }
+    .perfil-item b {
+      font-size: 14px;
+      color: var(--fg);
+    }
+    .perfil-item b.badge-no {
+      color: var(--r);
+    }
+    .perfil-priv-nota {
+      margin-top: 10px;
+      font-size: 11.5px;
+      color: var(--mut);
+      background: var(--gl);
+      color: var(--gd);
+      padding: 7px 11px;
+      border-radius: 8px;
+    }
     .vivo-bot-box {
       min-height: 290px;
     }
@@ -1388,6 +1458,9 @@ interface SegmentoDona {
         gap: 16px;
         justify-content: center;
       }
+      .perfil-legible {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })
@@ -1600,7 +1673,123 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   sinGuion(texto: string | null | undefined): string {
     if (!texto) return '';
-    return texto.replace(/_/g, ' ');
+    return this.etiquetaCategoria(texto);
+  }
+
+  etiquetaTipo(tipo: string | null | undefined): string {
+    if (!tipo) return '';
+    const norm = tipo.trim().toLowerCase();
+    switch (norm) {
+      case 'reaccion':
+      case 'reacción':
+        return 'Reacción';
+      case 'rsvp_evento':
+      case 'rsvp evento':
+        return 'Confirmación de asistencia';
+      case 'respuesta_encuesta':
+      case 'respuesta encuesta':
+        return 'Respuesta de encuesta';
+      case 'mensaje':
+        return 'Mensaje';
+      case 'comentario':
+        return 'Comentario';
+      default:
+        return this.etiquetaCategoria(tipo);
+    }
+  }
+
+  etiquetaCategoria(texto: string | null | undefined): string {
+    if (!texto) return '';
+    const limpio = texto.trim();
+    const mapa: Record<string, string> = {
+      reaccion: 'Reacción',
+      rsvp_evento: 'Confirmación de asistencia',
+      'rsvp evento': 'Confirmación de asistencia',
+      respuesta_encuesta: 'Respuesta de encuesta',
+      'respuesta encuesta': 'Respuesta de encuesta',
+      mensaje: 'Mensaje',
+      comentario: 'Comentario',
+      arte_comisiones: 'Arte y comisiones',
+      reglas_moderacion: 'Reglas y moderación',
+      videojuegos: 'Videojuegos',
+      eventos_convenciones: 'Eventos y convenciones',
+      seguridad_privacidad: 'Seguridad y privacidad',
+      fursuits: 'Fursuits',
+      musica: 'Música',
+      memes_humor: 'Memes y humor',
+      activo: 'Activo',
+      en_riesgo: 'En riesgo',
+      inactivo: 'Inactivo',
+      evento: 'Evento',
+      humor: 'Humor',
+      arte: 'Arte',
+      aviso: 'Aviso',
+      juegos: 'Juegos',
+      reglas: 'Reglas'
+    };
+    const key = limpio.toLowerCase();
+    if (mapa[key]) return mapa[key];
+    return limpio
+      .replace(/_/g, ' ')
+      .replace(/\brsvp evento\b/gi, 'Confirmación de asistencia')
+      .replace(/\breaccion\b/gi, 'reacción')
+      .replace(/\bmusica\b/gi, 'música')
+      .replace(/\bmoderacion\b/gi, 'moderación');
+  }
+
+  formatearFecha(iso: string | null | undefined): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) {
+      return iso.replace('T', ', ').replace('Z', '');
+    }
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const dia = d.getUTCDate();
+    const mes = meses[d.getUTCMonth()];
+    const anio = d.getUTCFullYear();
+    const hh = String(d.getUTCHours()).padStart(2, '0');
+    const mm = String(d.getUTCMinutes()).padStart(2, '0');
+    return `${dia} ${mes} ${anio}, ${hh}:${mm}`;
+  }
+
+  formatearFechaCorta(fecha: string | null | undefined): string {
+    if (!fecha) return '—';
+    const partes = fecha.split('T')[0].split('-');
+    if (partes.length === 3) {
+      const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      const anio = partes[0];
+      const mesIdx = parseInt(partes[1], 10) - 1;
+      const dia = parseInt(partes[2], 10);
+      if (mesIdx >= 0 && mesIdx < 12 && !isNaN(dia)) {
+        return `${dia} ${meses[mesIdx]} ${anio}`;
+      }
+    }
+    return this.formatearFecha(fecha);
+  }
+
+  nombreProcesoCarga(idEjecucion: string | null | undefined): string {
+    if (!idEjecucion) return '—';
+    const key = idEjecucion.trim().toUpperCase();
+    if (key === 'ETL-USUARIOS') return 'Usuarios revisados';
+    if (key === 'ETL-INTERACCIONES') return 'Interacciones revisadas';
+    return this.etiquetaCategoria(idEjecucion);
+  }
+
+  nombreArchivoCarga(archivo: string | null | undefined): string {
+    if (!archivo) return '—';
+    const norm = archivo.trim().toLowerCase();
+    if (norm.includes('usuarios')) return 'Padrón de usuarios';
+    if (norm.includes('interacciones')) return 'Lote de 1,000 interacciones';
+    return this.etiquetaCategoria(archivo);
+  }
+
+  textoMotivoRechazo(motivo: string | null | undefined): string {
+    if (!motivo) return 'Sin usuario registrado';
+    const norm = motivo.trim().toLowerCase();
+    if (norm.includes('inexistente') || norm.includes('usuario')) {
+      return 'Sin usuario registrado';
+    }
+    return this.etiquetaCategoria(motivo);
   }
 
   seleccionarSeccion(sec: SeccionActiva): void {
