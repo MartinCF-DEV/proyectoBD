@@ -233,7 +233,7 @@ public sealed class CloudDatabaseService : IAsyncDisposable
             {
                 try
                 {
-                    var bundlePath = ResolveBundlePath(DotEnvLoader.GetRequired("ASTRA_BUNDLE"));
+                    var bundlePath = ResolveOrCreateBundlePath();
                     var astraToken = DotEnvLoader.GetRequired("ASTRA_TOKEN");
                     _keyspace = Environment.GetEnvironmentVariable("ASTRA_KEYSPACE") ?? "community360";
 
@@ -288,6 +288,21 @@ public sealed class CloudDatabaseService : IAsyncDisposable
         {
             // Ignorar 503 inicial mientras despierta
         }
+    }
+
+    private static string ResolveOrCreateBundlePath()
+    {
+        var bundleB64 = Environment.GetEnvironmentVariable("ASTRA_BUNDLE_B64");
+        if (!string.IsNullOrWhiteSpace(bundleB64))
+        {
+            var tempBundlePath = Path.Combine(Path.GetTempPath(), "secure-connect-proyecto.zip");
+            var bytes = Convert.FromBase64String(bundleB64.Trim());
+            File.WriteAllBytes(tempBundlePath, bytes);
+            return tempBundlePath;
+        }
+
+        var configuredPath = Environment.GetEnvironmentVariable("ASTRA_BUNDLE") ?? "documentos/secure-connect-proyecto.zip";
+        return ResolveBundlePath(configuredPath);
     }
 
     private static string ResolveBundlePath(string configuredPath)

@@ -278,8 +278,8 @@ Para escalar **Community 360** a cientos de miles o millones de registros manten
   [https://community360-1nii.onrender.com/dashboard](https://community360-1nii.onrender.com/dashboard)
 * **URL Base de la API REST (para pruebas en Postman):**  
   `https://community360-1nii.onrender.com/api`
-* **Endpoint WebSocket en Tiempo Real:**  
-  `wss://community360-1nii.onrender.com/ws`
+* **Canal Interno de WebSocket (conectado automáticamente por el Dashboard):**  
+  `wss://community360-1nii.onrender.com/ws` *(No es un enlace para abrir en la barra del navegador; el Dashboard se conecta a este canal internamente de forma automática).*
 
 ---
 
