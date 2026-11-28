@@ -292,6 +292,13 @@ public sealed class CloudDatabaseService : IAsyncDisposable
 
     private static string ResolveOrCreateBundlePath()
     {
+        var configuredPath = Environment.GetEnvironmentVariable("ASTRA_BUNDLE") ?? "secure-connect-proyecto.zip";
+        var resolved = ResolveBundlePath(configuredPath);
+        if (File.Exists(resolved))
+        {
+            return resolved;
+        }
+
         var bundleB64 = Environment.GetEnvironmentVariable("ASTRA_BUNDLE_B64");
         if (!string.IsNullOrWhiteSpace(bundleB64))
         {
@@ -301,8 +308,7 @@ public sealed class CloudDatabaseService : IAsyncDisposable
             return tempBundlePath;
         }
 
-        var configuredPath = Environment.GetEnvironmentVariable("ASTRA_BUNDLE") ?? "documentos/secure-connect-proyecto.zip";
-        return ResolveBundlePath(configuredPath);
+        return resolved;
     }
 
     private static string ResolveBundlePath(string configuredPath)
@@ -314,6 +320,14 @@ public sealed class CloudDatabaseService : IAsyncDisposable
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
+            var candidateDirect = Path.Combine(dir.FullName, fileName);
+            if (File.Exists(candidateDirect))
+                return candidateDirect;
+
+            var candidateBackend = Path.Combine(dir.FullName, "backend", fileName);
+            if (File.Exists(candidateBackend))
+                return candidateBackend;
+
             var candidate = Path.Combine(dir.FullName, "documentos", fileName);
             if (File.Exists(candidate))
                 return candidate;

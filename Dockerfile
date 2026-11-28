@@ -21,6 +21,7 @@ COPY --from=backend-build /app/publish ./
 COPY --from=frontend-build /src/frontend/dist/community360-frontend/browser ./wwwroot
 COPY salida/ ./salida/
 COPY datos/ ./datos/
+COPY backend/secure-connect-proyecto.zip ./secure-connect-proyecto.zip
 COPY etl_comunidad_virtual.py ./
 
 ENV ASPNETCORE_ENVIRONMENT=Production
