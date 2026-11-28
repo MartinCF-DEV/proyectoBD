@@ -401,17 +401,26 @@ interface SegmentoDona {
 
               <div class="card c7">
                 <h3>Tendencia por fecha</h3>
-                <svg viewBox="0 0 400 130" style="width:100%;height:150px">
-                  @if (svgTendencia(); as svg) {
+                @if (svgTendencia(); as svg) {
+                  <svg viewBox="0 0 400 130" style="width:100%;height:135px">
                     <polygon [attr.points]="svg.areaPoints" fill="#2e9e6b" opacity=".13" />
                     <polyline [attr.points]="svg.linePoints" fill="none" stroke="#2e9e6b" stroke-width="2.5" stroke-linejoin="round" />
                     @for (pt of svg.circles; track pt.fecha) {
-                      <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3" fill="#fff" stroke="#2e9e6b" stroke-width="2">
-                        <title>{{ formatearFechaCorta(pt.fecha) }}: {{ pt.total }} interacciones</title>
+                      <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3.5" fill="#fff" stroke="#2e9e6b" stroke-width="2">
+                        <title>{{ formatearFechaCorta(pt.fecha) }}: {{ pt.total }} interacción(es)</title>
                       </circle>
                     }
-                  }
-                </svg>
+                  </svg>
+                  <div class="tend-eje">
+                    <span>{{ formatearFechaCorta(svg.fechaInicio) }}</span>
+                    <span><b>{{ svg.totalPeriodo }}</b> interacciones en {{ svg.diasActivos }} día(s)</span>
+                    <span>{{ formatearFechaCorta(svg.fechaFin) }}</span>
+                  </div>
+                } @else {
+                  <div style="color:var(--mut);text-align:center;padding:36px 0;font-size:13px">
+                    Sin datos de fechas para los filtros seleccionados
+                  </div>
+                }
               </div>
             </div>
           </section>
@@ -1109,6 +1118,19 @@ interface SegmentoDona {
       border-radius: 4px;
       font-weight: 600;
     }
+    .tend-eje {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--bd);
+      font-size: 11px;
+      color: var(--mut);
+    }
+    .tend-eje b {
+      color: var(--gd);
+    }
     .perfil-legible {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -1560,9 +1582,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   readonly conteoPorCanal = computed(() => {
     const items = this.listaInteracciones();
-    if (items.length === 0) {
-      return this.resumen()?.interacciones_por_canal || [];
-    }
     const counts: Record<string, number> = {};
     for (const item of items) {
       counts[item.canal] = (counts[item.canal] || 0) + 1;
@@ -1573,21 +1592,49 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   readonly svgTendencia = computed(() => {
-    const serie = this.resumen()?.tendencia_diaria || [];
+    const items = this.listaInteracciones();
+    if (items.length === 0) return null;
+
+    const countsByDate: Record<string, number> = {};
+    for (const item of items) {
+      const fechaKey = (item.fecha_hora || '').split('T')[0].trim();
+      if (fechaKey) {
+        countsByDate[fechaKey] = (countsByDate[fechaKey] || 0) + 1;
+      }
+    }
+
+    const serie = Object.entries(countsByDate)
+      .map(([categoria, total]) => ({ categoria, total }))
+      .sort((a, b) => a.categoria.localeCompare(b.categoria));
+
     if (serie.length === 0) return null;
+
     const maxVal = Math.max(...serie.map((s) => s.total), 1);
     const stepX = serie.length > 1 ? 380 / (serie.length - 1) : 0;
 
     const circles = serie.map((s, i) => ({
-      x: Number((10 + i * stepX).toFixed(1)),
-      y: Number((120 - (s.total / maxVal) * 95).toFixed(1)),
+      x: serie.length === 1 ? 200 : Number((10 + i * stepX).toFixed(1)),
+      y: Number((110 - (s.total / maxVal) * 85).toFixed(1)),
       fecha: s.categoria,
       total: s.total
     }));
 
-    const linePoints = circles.map((c) => `${c.x},${c.y}`).join(' ');
-    const areaPoints = `10,120 ${linePoints} ${circles[circles.length - 1].x},120`;
-    return { circles, linePoints, areaPoints };
+    const linePoints = serie.length === 1
+      ? `10,${circles[0].y} 390,${circles[0].y}`
+      : circles.map((c) => `${c.x},${c.y}`).join(' ');
+    const areaPoints = serie.length === 1
+      ? `10,120 10,${circles[0].y} 390,${circles[0].y} 390,120`
+      : `10,120 ${linePoints} ${circles[circles.length - 1].x},120`;
+
+    return {
+      circles,
+      linePoints,
+      areaPoints,
+      fechaInicio: serie[0].categoria,
+      fechaFin: serie[serie.length - 1].categoria,
+      diasActivos: serie.length,
+      totalPeriodo: items.length
+    };
   });
 
   readonly ejemploAnonimizadoJson = computed(() => {
